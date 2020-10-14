@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, memo, useLayoutEffect, useRef } from 'react';
 import './App.css';
-import { Scene, PerspectiveCamera, WebGLRenderer, OrbitControls, Raycaster, Vector2, Vector3, BoxGeometry, MeshBasicMaterial, Mesh } from 'three';
+import { Scene, PerspectiveCamera, WebGLRenderer, Raycaster, Vector2, Vector3, BoxGeometry, MeshBasicMaterial, Mesh } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import _ from 'lodash';
 
 let scene;
@@ -10,7 +11,7 @@ let controls;
 const cubeMeshes = {};
 const raycaster = new Raycaster();
 const mouse = new Vector2(0, 0);
-const currentHoverId = '';
+let currentHoverId = '';
 
 let geometry;
 let material;

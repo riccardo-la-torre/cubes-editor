@@ -1,7 +1,10 @@
 import React, { useReducer } from 'react';
+import _ from 'lodash';
 import './App.css';
 import reducer from './AppReducer';
 import Canvas from './Canvas';
+import LeftPanel from './LeftPanel';
+import RightPanel from './RightPanel';
 
 let lastId = 0;
 
@@ -25,6 +28,7 @@ function App() {
   });
 
   const setCamera = (initial) => dispatch({ type: 'setCamera', payload: { initial }});
+  const resetCamera = () => dispatch({ type: 'setCamera', payload: { initial: false }});
   const createCube = () => {
     const id = `${++lastId}`;
     const x = (Math.random() - 0.5) * 500;
@@ -42,10 +46,16 @@ function App() {
   const setHover = (id) => dispatch({ type: 'setHover', payload: { id }});
   const setActive = (id) => dispatch({ type: 'setActive', payload: { id }});
 
-  const { } = state;
+  const { cubes, active } = state;
+  const numberOfCubes = _.size(cubes);
+  const activeCube = cubes[active];
+
   return (
-    <Canvas {...state} setActive={setActive} setHover={setHover} setCamera={setCamera} />
-      
+    <>
+      <Canvas {...state} setActive={setActive} setHover={setHover} setCamera={setCamera} />
+      <LeftPanel numberOfCubes={numberOfCubes} createCube={createCube} resetCamera={resetCamera} resetScale={resetScale} />
+      <RightPanel activeId={active} color={activeCube && activeCube.color} scale={activeCube && activeCube.scale} changeColor={changeColor} scaleCube={scaleCube} requestDelete={requestDelete} />
+    </>
   );
 }
 

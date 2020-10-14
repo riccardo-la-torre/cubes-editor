@@ -1,0 +1,17 @@
+.RightPanel {
+  position: absolute;
+  z-index: 100;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  height: 50vh;
+  min-height: 200px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+h3, label {
+  color: white;
+}
