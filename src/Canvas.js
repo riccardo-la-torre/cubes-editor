@@ -1,6 +1,5 @@
-import React, { useEffect, useCallback, memo, useLayoutEffect, useRef } from 'react';
-import './App.css';
-import { Scene, PerspectiveCamera, WebGLRenderer, Raycaster, Vector2, Vector3, BoxGeometry, MeshBasicMaterial, Mesh } from 'three';
+import React, { useEffect, useCallback, memo, useLayoutEffect } from 'react';
+import { Scene, PerspectiveCamera, WebGLRenderer, Raycaster, Vector2, BoxGeometry, MeshBasicMaterial, Mesh } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import _ from 'lodash';
 
@@ -14,16 +13,13 @@ const mouse = new Vector2(0, 0);
 let currentHoverId = '';
 
 let geometry;
-let material;
 
-function hexToIntColor(rgb) {
-  return parseInt(rgb.substring(1), 16);
-}
+const prevState = {};
 
  
 function Canvas({ active, hover, cubes, camera: { initial }, setActive, setHover, setCamera }) {
 
-  const updateHover = useCallback(() => {
+  const updateHover = () => {
     raycaster.setFromCamera( mouse, camera );
     const intersects = raycaster.intersectObjects( scene.children );
     if (intersects.length) {
@@ -37,17 +33,17 @@ function Canvas({ active, hover, cubes, camera: { initial }, setActive, setHover
         setHover(null);
       }
     }
-  }, [])
+  };
 
-  const animate = useCallback(() => {
+  const animate = () => {
     requestAnimationFrame(animate);
     updateHover();
     renderer.render(scene, camera);
-  },[]);
+  };
 
-  const updateCamera = useCallback(() => {
+  const updateCamera = () => {
     if (initial) setCamera(false);
-  },[]);
+  };
   const setRef= useCallback(node => {
     scene = new Scene();
     camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -57,7 +53,6 @@ function Canvas({ active, hover, cubes, camera: { initial }, setActive, setHover
     controls = new OrbitControls(camera, renderer.domElement);
     controls.addEventListener('change', updateCamera);
     geometry = new BoxGeometry();
-    material = new MeshBasicMaterial();
     animate();
   }, []);
 
@@ -84,27 +79,23 @@ function Canvas({ active, hover, cubes, camera: { initial }, setActive, setHover
     };
   }, []);
 
-  const prevState = useRef({
-    active: null,
-    hover: null,
-    cubes: {},
-    initial: true
-  });
 
   useEffect(() => {
-    const { active: prevActive, hover: prevHover, cubes: prevCubes, initial: prevInitial } = prevState.current;
+    const { active: prevActive, hover: prevHover, cubes: prevCubes, initial: prevInitial } = prevState;
     if (prevCubes !== cubes) {
       const deleted = _.difference(_.keys(prevCubes), _.keys(cubes));
       deleted.forEach(id => {
         const cubeMesh = cubeMeshes[id];
         if (!cubeMesh) return;
         scene.remove(cubeMesh);
+        cubeMesh.material.dispose();
       });
       const added = _.omit(cubes, _.keys(prevCubes));
       _.forOwn(added, ({ color, position: { x, y, z }}, id) => {
+        const material = new MeshBasicMaterial({ color });
         const cubeMesh = new Mesh(geometry, material);
-        cubeMesh.material.color.set(hexToIntColor(color));
-        cubeMesh.position.set(new Vector3(x, y, z));
+        cubeMesh.position.set(x, y, z);
+        cubeMesh.name = id;
         cubeMeshes[id] = cubeMesh;
         scene.add(cubeMesh);
       });
@@ -113,11 +104,11 @@ function Canvas({ active, hover, cubes, camera: { initial }, setActive, setHover
         if (prevCubes[id] === cubes[id]) return;
         const cubeMesh = cubeMeshes[id];
         if (!cubeMesh) return;
-        if (prevCubes[id].color !== cubes[id].color) {
-          cubeMesh.material.color.set(hexToIntColor(cubes[id].color));
+        if (prevCubes[id].color !== cubes[id].color && id !== active) {
+          cubeMesh.material.color.set(cubes[id].color);
         }
         if (prevCubes[id].scale !== cubes[id].scale) {
-          cubeMesh.scale.set(new Vector3(cubes[id].scale, cubes[id].scale, cubes[id].scale));
+          cubeMesh.scale.set(cubes[id].scale, cubes[id].scale, cubes[id].scale);
         }
       });
     }
@@ -126,14 +117,14 @@ function Canvas({ active, hover, cubes, camera: { initial }, setActive, setHover
         const cubeMesh = cubeMeshes[prevActive];
         const cube = cubes[prevActive];
         if (cubeMesh && cube) {
-          cubeMesh.material.color.set(hexToIntColor(cube.color));
+          cubeMesh.material.color.set(cube.color);
         }
       }
       if (active) {
         const cubeMesh = cubeMeshes[active];
         const cube = cubes[active];
         if (cubeMesh && cube) {
-          cubeMesh.material.color.set(hexToIntColor('#0000FF'));
+          cubeMesh.material.color.set('#0000FF');
         }
       }
     }
@@ -142,26 +133,24 @@ function Canvas({ active, hover, cubes, camera: { initial }, setActive, setHover
         const cubeMesh = cubeMeshes[prevHover];
         const cube = cubes[prevHover];
         if (cubeMesh && cube) {
-          cubeMesh.material.color.set(hexToIntColor(cube.color));
+          cubeMesh.material.color.set(cube.color);
         }
       }
-      if (hover) {
+      if (hover && hover !== active) {
         const cubeMesh = cubeMeshes[hover];
         const cube = cubes[hover];
         if (cubeMesh && cube) {
-          cubeMesh.material.color.set(hexToIntColor('#00FF00'));
+          cubeMesh.material.color.set('#00FF00');
         }
       }
     }
     if (!prevInitial && initial) {
-      camera.rotation.set(new Vector3(0, 0, 0));
-      camera.zoom = 1;
-      controls.update();
+      controls.reset();
     }
-    prevState.current.active = active;
-    prevState.current.hover = hover;
-    prevState.current.cubes = cubes;
-    prevState.current.initial = initial;
+    prevState.active = active;
+    prevState.hover = hover;
+    prevState.cubes = cubes;
+    prevState.initial = initial;
   }, [active, hover, cubes, initial]);
 
 

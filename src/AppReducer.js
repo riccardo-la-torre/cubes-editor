@@ -46,23 +46,12 @@ const reducer = (state, { type, payload }) => {
           }
         }
       };
-    case 'requestDelete':
-      return {
-        ...state,
-        deleteModal: true
-      };
-    case 'cancelDelete':
-      return {
-        ...state,
-        deleteModal: false
-      };
-    case 'confirmDelete':
+    case 'delete':
       return {
         ...state,
         active: state.active === payload.id ? null : state.active,
         hovered: state.hovered === payload.id ? null : state.hovered,
         cubes: _.omit(state.cubes, [ payload.id ]),
-        deleteModal: false
       };
     case 'setHover':
       return {

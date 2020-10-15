@@ -1,6 +1,5 @@
 import React, { useReducer } from 'react';
 import _ from 'lodash';
-import './App.css';
 import reducer from './AppReducer';
 import Canvas from './Canvas';
 import LeftPanel from './LeftPanel';
@@ -23,26 +22,23 @@ function App() {
     active: null,
     hover: null,
     cubes: {},
-    camera: { initial: true },
-    deleteModal: false
+    camera: { initial: true }
   });
 
   const setCamera = (initial) => dispatch({ type: 'setCamera', payload: { initial }});
-  const resetCamera = () => dispatch({ type: 'setCamera', payload: { initial: false }});
+  const resetCamera = () => dispatch({ type: 'setCamera', payload: { initial: true }});
   const createCube = () => {
     const id = `${++lastId}`;
-    const x = (Math.random() - 0.5) * 500;
-    const y = (Math.random() - 0.5) * 500;
-    const z = Math.random() * 500;
+    const x = (Math.random() - 0.5) * 12;
+    const y = (Math.random() - 0.5) * 12;
+    const z = (Math.random() - 1) * 12;
     const color = getRandomColor();
     dispatch({ type: 'createCube', payload: { id, x, y, z, color }});
   };
   const scaleCube = (id, scale) => dispatch({ type: 'scaleCube', payload: { id, scale }});
   const resetScale = () => dispatch({ type: 'resetScale' });
   const changeColor = (id, color) => dispatch({ type: 'changeColor', payload: { id, color }});
-  const requestDelete = () => dispatch({ type: 'requestDelete' });
-  const cancelDelete = () => dispatch({ type: 'cancelDelete' });
-  const confirmDelete = (id) => dispatch({ type: 'confirmDelete', payload: { id }});
+  const confirmDelete = (id) => dispatch({ type: 'delete', payload: { id }});
   const setHover = (id) => dispatch({ type: 'setHover', payload: { id }});
   const setActive = (id) => dispatch({ type: 'setActive', payload: { id }});
 
@@ -54,7 +50,7 @@ function App() {
     <>
       <Canvas {...state} setActive={setActive} setHover={setHover} setCamera={setCamera} />
       <LeftPanel numberOfCubes={numberOfCubes} createCube={createCube} resetCamera={resetCamera} resetScale={resetScale} />
-      <RightPanel activeId={active} color={activeCube && activeCube.color} scale={activeCube && activeCube.scale} changeColor={changeColor} scaleCube={scaleCube} requestDelete={requestDelete} />
+      <RightPanel activeId={active} color={activeCube && activeCube.color} scale={activeCube && activeCube.scale} changeColor={changeColor} scaleCube={scaleCube} confirmDelete={confirmDelete} />
     </>
   );
 }
